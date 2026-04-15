@@ -41,11 +41,7 @@
     gap: 1rem;
   }
 
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
+  h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
 
   .controls {
     display: flex;
@@ -54,11 +50,7 @@
     flex-wrap: wrap;
   }
 
-  .controls label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
+  .controls label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
 
   .controls select {
     font-size: 0.8rem;
@@ -67,6 +59,41 @@
     border-radius: 6px;
     background: var(--card-bg);
     color: var(--text);
+    cursor: pointer;
+  }
+
+  .btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: var(--bg); }
+
+  .override-banner {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .override-banner button {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid #93c5fd;
+    border-radius: 4px;
+    background: #eff6ff;
+    color: #1e40af;
     cursor: pointer;
   }
 
@@ -101,16 +128,88 @@
     padding: 1.25rem;
     border-left: 4px solid var(--dormant);
     transition: box-shadow 0.2s;
-    max-height: 360px;
-    overflow-y: auto;
+    height: 280px;
+    overflow: hidden;
+    position: relative;
   }
 
   .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-
   .card.fresh   { border-left-color: var(--fresh); }
   .card.warm    { border-left-color: var(--warm); }
   .card.stale   { border-left-color: var(--stale); }
   .card.dormant { border-left-color: var(--dormant); }
+
+  .card-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, var(--card-bg));
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    pointer-events: none;
+  }
+
+  .card-fade .expand-btn {
+    pointer-events: auto;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    background: var(--card-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .card-fade .expand-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Overlay expanded card */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .overlay-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 560px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-left: 4px solid var(--dormant);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  .overlay-card.fresh   { border-left-color: var(--fresh); }
+  .overlay-card.warm    { border-left-color: var(--warm); }
+  .overlay-card.stale   { border-left-color: var(--stale); }
+  .overlay-card.dormant { border-left-color: var(--dormant); }
+
+  .overlay-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+  }
+
+  .overlay-close:hover { color: var(--text); }
 
   .card-header {
     display: flex;
@@ -119,23 +218,10 @@
     margin-bottom: 0.75rem;
   }
 
-  .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .card-title a {
-    color: inherit;
-    text-decoration: none;
-  }
-
+  .card-title { font-size: 1rem; font-weight: 600; }
+  .card-title a { color: inherit; text-decoration: none; }
   .card-title a:hover { color: var(--accent); }
-
-  .card-owner {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 400;
-  }
+  .card-owner { font-size: 0.75rem; color: var(--text-muted); font-weight: 400; }
 
   .staleness-badge {
     font-size: 0.7rem;
@@ -151,34 +237,11 @@
   .staleness-badge.stale   { background: #fee2e2; color: #991b1b; }
   .staleness-badge.dormant { background: #f1f5f9; color: #475569; }
 
-  .label-tags {
-    display: flex;
-    gap: 0.3rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.75rem;
-  }
+  .label-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .label-tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: #e2e8f0; color: #475569; font-weight: 500; }
+  .github-label-tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: #dbeafe; color: #1e40af; font-weight: 500; }
 
-  .label-tag {
-    font-size: 0.65rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    background: #e2e8f0;
-    color: #475569;
-    font-weight: 500;
-  }
-
-  .github-label-tag {
-    font-size: 0.65rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    background: #dbeafe;
-    color: #1e40af;
-    font-weight: 500;
-  }
-
-  .section {
-    margin-top: 0.6rem;
-  }
+  .section { margin-top: 0.6rem; }
 
   .section-title {
     font-size: 0.7rem;
@@ -189,87 +252,32 @@
     margin-bottom: 0.3rem;
   }
 
-  .pr-list {
-    list-style: none;
-    font-size: 0.82rem;
-  }
-
-  .pr-list li {
-    padding: 0.2rem 0;
-    display: flex;
-    gap: 0.4rem;
-    align-items: flex-start;
-  }
-
-  .pr-list li a {
-    color: var(--text);
-    text-decoration: none;
-  }
-
+  .pr-list { list-style: none; font-size: 0.82rem; }
+  .pr-list li { padding: 0.2rem 0; display: flex; gap: 0.4rem; align-items: flex-start; }
+  .pr-list li a { color: var(--text); text-decoration: none; }
   .pr-list li a:hover { text-decoration: underline; }
 
-  .pr-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 0.45rem;
-  }
-
+  .pr-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 0.45rem; }
   .pr-dot.open { background: var(--pr-open); }
   .pr-dot.merged { background: var(--pr-merged); }
 
-  .open-count {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--pr-open);
-  }
+  .open-count { font-size: 0.85rem; font-weight: 600; color: var(--pr-open); }
+  .no-prs { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
 
-  .no-prs {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .loading {
-    text-align: center;
-    padding: 4rem;
-    color: var(--text-muted);
-  }
+  .loading { text-align: center; padding: 4rem; color: var(--text-muted); }
 
   .spinner {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 0.5rem;
+    display: inline-block; width: 24px; height: 24px;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 0.5rem;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .error-banner {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
+    background: #fee2e2; color: #991b1b;
+    padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem;
   }
-
-  .refresh-btn {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--card-bg);
-    color: var(--text-muted);
-    cursor: pointer;
-  }
-
-  .refresh-btn:hover { background: var(--bg); }
 </style>
 </head>
 <body>
@@ -284,39 +292,35 @@
       <option value="audience">Audience</option>
       <option value="problemSpace">Problem Space</option>
     </select>
-    <button class="refresh-btn" id="refreshBtn" title="Clear cache and refetch">↻ Refresh</button>
+    <button class="btn" id="refreshBtn" title="Clear cache and refetch">&#8635; Refresh</button>
+    <a href="edit.html" class="btn">Edit repos</a>
   </div>
   <div class="meta" id="metaInfo"></div>
 </header>
 
 <div id="app">
-  <div class="loading"><div class="spinner"></div><br>Loading repos…</div>
+  <div class="loading"><div class="spinner"></div><br>Loading repos...</div>
 </div>
 
 <script>
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CACHE_TTL = 30 * 60 * 1000;
 const API = 'https://api.github.com';
 
-function cacheKey(url) {
-  return 'gh_cache_' + url;
-}
+function cacheKey(url) { return 'gh_cache_' + url; }
 
 async function cachedFetch(url) {
   const key = cacheKey(url);
   const cached = localStorage.getItem(key);
   if (cached) {
     const { data, ts } = JSON.parse(cached);
-    if (Date.now() - ts < CACHE_TTL) {
-      return { data, fromCache: true };
-    }
+    if (Date.now() - ts < CACHE_TTL) return { data, fromCache: true };
   }
   const resp = await fetch(url);
   if (!resp.ok) {
     const remaining = resp.headers.get('X-RateLimit-Remaining');
     if (resp.status === 403 && remaining === '0') {
       const reset = resp.headers.get('X-RateLimit-Reset');
-      const resetDate = new Date(reset * 1000);
-      throw new Error(`Rate limited. Resets at ${resetDate.toLocaleTimeString()}`);
+      throw new Error(`Rate limited. Resets at ${new Date(reset * 1000).toLocaleTimeString()}`);
     }
     throw new Error(`HTTP ${resp.status} for ${url}`);
   }
@@ -329,8 +333,7 @@ async function cachedFetch(url) {
 
 function daysSince(dateStr) {
   if (!dateStr) return Infinity;
-  const d = new Date(dateStr);
-  return Math.floor((Date.now() - d) / (1000 * 60 * 60 * 24));
+  return Math.floor((Date.now() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
 }
 
 function stalenessClass(days) {
@@ -350,11 +353,9 @@ function stalenessText(days) {
 async function fetchRepoData(repoConfig) {
   const { owner, repo, githubLabel } = repoConfig;
   const base = `${API}/repos/${owner}/${repo}`;
-
   const fetches = [];
 
   if (githubLabel) {
-    // Use the issues endpoint with label filter — it returns both issues and PRs
     const labelEncoded = encodeURIComponent(githubLabel);
     fetches.push(
       cachedFetch(`${base}/issues?labels=${labelEncoded}&state=open&sort=updated&direction=desc&per_page=30`),
@@ -367,23 +368,16 @@ async function fetchRepoData(repoConfig) {
   }
 
   const results = await Promise.all(fetches);
-
   const now = new Date();
   const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-
   let openPRs, recentlyMerged, lastMergeDate, labeledIssues;
 
   if (githubLabel) {
     const openItems = results[0].data;
     const closedItems = results[1].data;
-
-    // Separate PRs from issues (PRs have a pull_request key)
     openPRs = openItems.filter(item => item.pull_request);
     labeledIssues = openItems.filter(item => !item.pull_request);
-
-    // For closed items, find merged PRs (closed PRs with a merge reference)
     const closedPRs = closedItems.filter(item => item.pull_request);
-    // The issues endpoint doesn't include merged_at, so use closed_at as proxy
     recentlyMerged = closedPRs.filter(item => new Date(item.closed_at) > thirtyDaysAgo);
     lastMergeDate = closedPRs.length > 0 ? closedPRs[0].closed_at : null;
   } else {
@@ -396,88 +390,12 @@ async function fetchRepoData(repoConfig) {
   }
 
   return {
-    ...repoConfig,
-    lastMergeDate,
+    ...repoConfig, lastMergeDate,
     daysSinceLastMerge: daysSince(lastMergeDate),
-    openPRs,
-    recentlyMerged,
-    labeledIssues,
-    remaining: results[0].remaining,
-    limit: results[0].limit,
+    openPRs, recentlyMerged, labeledIssues,
+    remaining: results[0].remaining, limit: results[0].limit,
     fromCache: results.every(r => r.fromCache),
   };
-}
-
-function renderCard(data) {
-  const sc = stalenessClass(data.daysSinceLastMerge);
-  const card = document.createElement('div');
-  card.className = `card ${sc}`;
-
-  const labelTags = Object.entries(data.labels || {})
-    .map(([k, v]) => `<span class="label-tag">${v}</span>`)
-    .join('');
-
-  const ghLabel = data.githubLabel
-    ? `<span class="github-label-tag">⚑ ${data.githubLabel}</span>`
-    : '';
-
-  let openPRsHTML = '';
-  if (data.openPRs.length > 0) {
-    const items = data.openPRs.map(pr =>
-      `<li><span class="pr-dot open"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
-    ).join('');
-    openPRsHTML = `
-      <div class="section">
-        <div class="section-title">Open PRs <span class="open-count">(${data.openPRs.length})</span></div>
-        <ul class="pr-list">${items}</ul>
-      </div>`;
-  }
-
-  let mergedHTML = '';
-  if (data.recentlyMerged.length > 0) {
-    const items = data.recentlyMerged.slice(0, 5).map(pr =>
-      `<li><span class="pr-dot merged"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
-    ).join('');
-    const more = data.recentlyMerged.length > 5 ? `<li style="color:var(--text-muted);font-size:0.75rem;padding-left:1rem">+ ${data.recentlyMerged.length - 5} more</li>` : '';
-    mergedHTML = `
-      <div class="section">
-        <div class="section-title">Recently Merged (30d)</div>
-        <ul class="pr-list">${items}${more}</ul>
-      </div>`;
-  }
-
-  let labeledHTML = '';
-  if (data.labeledIssues && data.labeledIssues.length > 0) {
-    const items = data.labeledIssues.map(issue =>
-      `<li><span class="pr-dot open"></span><a href="${issue.html_url}" target="_blank">#${issue.number} ${escHtml(issue.title)}</a></li>`
-    ).join('');
-    labeledHTML = `
-      <div class="section">
-        <div class="section-title">Labeled Issues: ${escHtml(data.githubLabel)} <span class="open-count">(${data.labeledIssues.length})</span></div>
-        <ul class="pr-list">${items}</ul>
-      </div>`;
-  }
-
-  const noPRs = data.openPRs.length === 0 && data.recentlyMerged.length === 0 && (!data.labeledIssues || data.labeledIssues.length === 0)
-    ? '<div class="no-prs">No PR activity</div>' : '';
-
-  card.innerHTML = `
-    <div class="card-header">
-      <div>
-        <div class="card-title">
-          <a href="https://github.com/${data.owner}/${data.repo}" target="_blank">${data.repo}</a>
-        </div>
-        <div class="card-owner">${data.owner}</div>
-      </div>
-      <span class="staleness-badge ${sc}">${stalenessText(data.daysSinceLastMerge)}</span>
-    </div>
-    <div class="label-tags">${labelTags}${ghLabel}</div>
-    ${openPRsHTML}
-    ${mergedHTML}
-    ${labeledHTML}
-    ${noPRs}
-  `;
-  return card;
 }
 
 function escHtml(s) {
@@ -486,35 +404,138 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
+function buildCardContent(data) {
+  const sc = stalenessClass(data.daysSinceLastMerge);
+  const labelTags = Object.entries(data.labels || {})
+    .map(([k, v]) => `<span class="label-tag">${escHtml(v)}</span>`).join('');
+  const ghLabel = data.githubLabel
+    ? `<span class="github-label-tag">${escHtml(data.githubLabel)}</span>` : '';
+
+  let openPRsHTML = '';
+  if (data.openPRs.length > 0) {
+    const items = data.openPRs.map(pr =>
+      `<li><span class="pr-dot open"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
+    ).join('');
+    openPRsHTML = `<div class="section">
+      <div class="section-title">Open PRs <span class="open-count">(${data.openPRs.length})</span></div>
+      <ul class="pr-list">${items}</ul></div>`;
+  }
+
+  let mergedHTML = '';
+  if (data.recentlyMerged.length > 0) {
+    const items = data.recentlyMerged.map(pr =>
+      `<li><span class="pr-dot merged"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
+    ).join('');
+    mergedHTML = `<div class="section">
+      <div class="section-title">Recently Merged (30d)</div>
+      <ul class="pr-list">${items}</ul></div>`;
+  }
+
+  let labeledHTML = '';
+  if (data.labeledIssues && data.labeledIssues.length > 0) {
+    const items = data.labeledIssues.map(issue =>
+      `<li><span class="pr-dot open"></span><a href="${issue.html_url}" target="_blank">#${issue.number} ${escHtml(issue.title)}</a></li>`
+    ).join('');
+    labeledHTML = `<div class="section">
+      <div class="section-title">Labeled Issues: ${escHtml(data.githubLabel)} <span class="open-count">(${data.labeledIssues.length})</span></div>
+      <ul class="pr-list">${items}</ul></div>`;
+  }
+
+  const noPRs = data.openPRs.length === 0 && data.recentlyMerged.length === 0
+    && (!data.labeledIssues || data.labeledIssues.length === 0)
+    ? '<div class="no-prs">No PR activity</div>' : '';
+
+  return { sc, html: `
+    <div class="card-header">
+      <div>
+        <div class="card-title"><a href="https://github.com/${data.owner}/${data.repo}" target="_blank">${escHtml(data.repo)}</a></div>
+        <div class="card-owner">${escHtml(data.owner)}</div>
+      </div>
+      <span class="staleness-badge ${sc}">${stalenessText(data.daysSinceLastMerge)}</span>
+    </div>
+    <div class="label-tags">${labelTags}${ghLabel}</div>
+    ${openPRsHTML}${mergedHTML}${labeledHTML}${noPRs}
+  `};
+}
+
+function renderCard(data) {
+  const { sc, html } = buildCardContent(data);
+  const card = document.createElement('div');
+  card.className = `card ${sc}`;
+  card.innerHTML = html;
+
+  // Check if content overflows
+  requestAnimationFrame(() => {
+    if (card.scrollHeight > card.clientHeight) {
+      const fade = document.createElement('div');
+      fade.className = 'card-fade';
+      fade.innerHTML = '<button class="expand-btn">Show more</button>';
+      fade.querySelector('.expand-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        showOverlay(data);
+      });
+      card.appendChild(fade);
+    }
+  });
+
+  return card;
+}
+
+function showOverlay(data) {
+  const { sc, html } = buildCardContent(data);
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = `<div class="overlay-card ${sc}">
+    <button class="overlay-close">&times;</button>
+    ${html}
+  </div>`;
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+  overlay.querySelector('.overlay-close').addEventListener('click', () => overlay.remove());
+  document.addEventListener('keydown', function handler(e) {
+    if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
+  });
+  document.body.appendChild(overlay);
+}
+
 function renderDashboard(repos, groupBy) {
   const app = document.getElementById('app');
   app.innerHTML = '';
 
+  // Override banner
+  if (localStorage.getItem('repos_override')) {
+    const banner = document.createElement('div');
+    banner.className = 'override-banner';
+    banner.innerHTML = `Using local repos.json override <button id="clearOverride">Clear override</button>`;
+    app.appendChild(banner);
+    banner.querySelector('#clearOverride').addEventListener('click', () => {
+      localStorage.removeItem('repos_override');
+      loadDashboard();
+    });
+  }
+
   if (!groupBy) {
-    // Sort by last activity (most recent first)
     repos.sort((a, b) => a.daysSinceLastMerge - b.daysSinceLastMerge);
     const grid = document.createElement('div');
     grid.className = 'grid';
     repos.forEach(r => grid.appendChild(renderCard(r)));
     app.appendChild(grid);
   } else {
-    // Group by the chosen label dimension
     const groups = {};
     repos.forEach(r => {
       const key = (r.labels && r.labels[groupBy]) || 'uncategorized';
       if (!groups[key]) groups[key] = [];
       groups[key].push(r);
     });
-    const sortedKeys = Object.keys(groups).sort();
-    sortedKeys.forEach(key => {
+    Object.keys(groups).sort().forEach(key => {
       const heading = document.createElement('h2');
       heading.className = 'group-heading';
       heading.textContent = key;
       app.appendChild(heading);
       const grid = document.createElement('div');
       grid.className = 'grid';
-      groups[key]
-        .sort((a, b) => a.daysSinceLastMerge - b.daysSinceLastMerge)
+      groups[key].sort((a, b) => a.daysSinceLastMerge - b.daysSinceLastMerge)
         .forEach(r => grid.appendChild(renderCard(r)));
       app.appendChild(grid);
     });
@@ -523,20 +544,18 @@ function renderDashboard(repos, groupBy) {
 
 function updateMeta(repos) {
   const meta = document.getElementById('metaInfo');
-  const anyFromCache = repos.some(r => r.fromCache);
-  const allFromCache = repos.every(r => r.fromCache);
-
-  // Find the oldest cache timestamp
   let lastFetched = null;
   for (const r of repos) {
-    const key = cacheKey(`${API}/repos/${r.owner}/${r.repo}/pulls?state=all&sort=updated&direction=desc&per_page=30`);
+    const suffix = r.githubLabel
+      ? `issues?labels=${encodeURIComponent(r.githubLabel)}&state=open&sort=updated&direction=desc&per_page=30`
+      : 'pulls?state=all&sort=updated&direction=desc&per_page=30';
+    const key = cacheKey(`${API}/repos/${r.owner}/${r.repo}/${suffix}`);
     const cached = localStorage.getItem(key);
     if (cached) {
       const { ts } = JSON.parse(cached);
       if (!lastFetched || ts < lastFetched) lastFetched = ts;
     }
   }
-
   const remaining = repos.find(r => r.remaining !== undefined);
   let rateInfo = '';
   if (remaining && remaining.remaining !== undefined) {
@@ -544,40 +563,42 @@ function updateMeta(repos) {
     const warn = pct < 20 ? ' rate-warn' : '';
     rateInfo = ` · <span class="${warn}">API: ${remaining.remaining}/${remaining.limit} remaining</span>`;
   }
-
   const fetchedStr = lastFetched ? new Date(lastFetched).toLocaleTimeString() : 'just now';
+  const allFromCache = repos.every(r => r.fromCache);
+  const anyFromCache = repos.some(r => r.fromCache);
   const cacheNote = allFromCache ? '(cached)' : anyFromCache ? '(partially cached)' : '(live)';
   meta.innerHTML = `Last fetched: ${fetchedStr} ${cacheNote}${rateInfo}`;
 }
 
 let repoData = [];
 
+async function loadReposConfig() {
+  const override = localStorage.getItem('repos_override');
+  if (override) {
+    return JSON.parse(override);
+  }
+  const resp = await fetch('repos.json');
+  return resp.json();
+}
+
 async function loadDashboard(forceRefresh = false) {
   const app = document.getElementById('app');
-  app.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading repos…</div>';
+  app.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading repos...</div>';
 
   try {
-    const configResp = await fetch('repos.json');
-    const config = await configResp.json();
+    const config = await loadReposConfig();
 
     if (forceRefresh) {
-      // Clear all cached github data
-      const keys = Object.keys(localStorage).filter(k => k.startsWith('gh_cache_'));
-      keys.forEach(k => localStorage.removeItem(k));
+      Object.keys(localStorage).filter(k => k.startsWith('gh_cache_'))
+        .forEach(k => localStorage.removeItem(k));
     }
 
-    const results = await Promise.allSettled(
-      config.repos.map(r => fetchRepoData(r))
-    );
-
+    const results = await Promise.allSettled(config.repos.map(r => fetchRepoData(r)));
     const errors = [];
     repoData = [];
     results.forEach((result, i) => {
-      if (result.status === 'fulfilled') {
-        repoData.push(result.value);
-      } else {
-        errors.push(`${config.repos[i].owner}/${config.repos[i].repo}: ${result.reason.message}`);
-      }
+      if (result.status === 'fulfilled') repoData.push(result.value);
+      else errors.push(`${config.repos[i].owner}/${config.repos[i].repo}: ${result.reason.message}`);
     });
 
     if (errors.length > 0) {
@@ -595,15 +616,17 @@ async function loadDashboard(forceRefresh = false) {
   }
 }
 
+// Persist groupBy
+const savedGroupBy = localStorage.getItem('dashboard_groupBy');
+if (savedGroupBy) document.getElementById('groupBy').value = savedGroupBy;
+
 document.getElementById('groupBy').addEventListener('change', () => {
-  if (repoData.length > 0) {
-    renderDashboard(repoData, document.getElementById('groupBy').value);
-  }
+  const val = document.getElementById('groupBy').value;
+  localStorage.setItem('dashboard_groupBy', val);
+  if (repoData.length > 0) renderDashboard(repoData, val);
 });
 
-document.getElementById('refreshBtn').addEventListener('click', () => {
-  loadDashboard(true);
-});
+document.getElementById('refreshBtn').addEventListener('click', () => loadDashboard(true));
 
 loadDashboard();
 </script>
