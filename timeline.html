@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline - my.wordpress.net</title>
+<link rel="stylesheet" href="style.css">
+<style>body { max-width: 960px; }</style>
+</head>
+<body>
+
+<header>
+  <h1>Timeline</h1>
+  <div class="controls">
+    <label for="daysBack">Days:</label>
+    <input type="number" id="daysBack" value="30" min="1" max="365">
+    <label for="filterType">Show:</label>
+    <select id="filterType">
+      <option value="all">All activity</option>
+      <option value="prs">PRs only</option>
+      <option value="issues">Issues only</option>
+      <option value="merged">Merged only</option>
+    </select>
+    <button class="btn" id="refreshBtn" title="Clear cache and refetch">&#8635; Refresh</button>
+    <a href="index.html" class="btn">&larr; Dashboard</a>
+  </div>
+  <div class="meta" id="metaInfo"></div>
+</header>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot pr-opened"></span> PR opened</span>
+  <span class="legend-item"><span class="legend-dot pr-merged"></span> PR merged</span>
+  <span class="legend-item"><span class="legend-dot pr-closed"></span> PR/Issue closed</span>
+  <span class="legend-item"><span class="legend-dot issue-opened"></span> Issue opened</span>
+</div>
+
+<div class="filter-chips" id="repoChips"></div>
+
+<div id="app">
+  <div class="loading"><div class="spinner"></div><br>Loading timeline...</div>
+</div>
+
+<script>
+const CACHE_TTL = 30 * 60 * 1000;
+const API = 'https://api.github.com';
+
+function cacheKey(url) { return 'gh_cache_' + url; }
+
+async function cachedFetch(url) {
+  const key = cacheKey(url);
+  const cached = localStorage.getItem(key);
+  if (cached) {
+    const { data, ts } = JSON.parse(cached);
+    if (Date.now() - ts < CACHE_TTL) return { data, fromCache: true };
+  }
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    const remaining = resp.headers.get('X-RateLimit-Remaining');
+    if (resp.status === 403 && remaining === '0') {
+      const reset = resp.headers.get('X-RateLimit-Reset');
+      throw new Error(`Rate limited. Resets at ${new Date(reset * 1000).toLocaleTimeString()}`);
+    }
+    throw new Error(`HTTP ${resp.status} for ${url}`);
+  }
+  const data = await resp.json();
+  const remaining = resp.headers.get('X-RateLimit-Remaining');
+  const limit = resp.headers.get('X-RateLimit-Limit');
+  localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  return { data, fromCache: false, remaining, limit };
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+async function loadReposConfig() {
+  const override = localStorage.getItem('repos_override');
+  if (override) return JSON.parse(override);
+  const resp = await fetch('repos.json');
+  return resp.json();
+}
+
+function classifyEvent(item, repoConfig) {
+  const isPR = !!item.pull_request;
+  const events = [];
+
+  if (isPR) {
+    // PR created
+    events.push({
+      type: 'pr-opened',
+      typeLabel: 'PR opened',
+      icon: 'PR',
+      date: new Date(item.created_at),
+      title: item.title,
+      number: item.number,
+      url: item.html_url,
+      repo: `${repoConfig.owner}/${repoConfig.repo}`,
+      user: item.user,
+    });
+
+    // PR merged or closed
+    if (item.pull_request.merged_at) {
+      events.push({
+        type: 'pr-merged',
+        typeLabel: 'PR merged',
+        icon: 'M',
+        date: new Date(item.pull_request.merged_at),
+        title: item.title,
+        number: item.number,
+        url: item.html_url,
+        repo: `${repoConfig.owner}/${repoConfig.repo}`,
+        user: item.user,
+      });
+    } else if (item.state === 'closed') {
+      events.push({
+        type: 'pr-closed',
+        typeLabel: 'PR closed',
+        icon: 'X',
+        date: new Date(item.closed_at),
+        title: item.title,
+        number: item.number,
+        url: item.html_url,
+        repo: `${repoConfig.owner}/${repoConfig.repo}`,
+        user: item.user,
+      });
+    }
+  } else {
+    // Issue created
+    events.push({
+      type: 'issue-opened',
+      typeLabel: 'Issue opened',
+      icon: 'I',
+      date: new Date(item.created_at),
+      title: item.title,
+      number: item.number,
+      url: item.html_url,
+      repo: `${repoConfig.owner}/${repoConfig.repo}`,
+      user: item.user,
+    });
+
+    if (item.state === 'closed') {
+      events.push({
+        type: 'issue-closed',
+        typeLabel: 'Issue closed',
+        icon: 'X',
+        date: new Date(item.closed_at),
+        title: item.title,
+        number: item.number,
+        url: item.html_url,
+        repo: `${repoConfig.owner}/${repoConfig.repo}`,
+        user: item.user,
+      });
+    }
+  }
+
+  return events;
+}
+
+async function fetchTimelineData(repoConfig) {
+  const { owner, repo, githubLabel } = repoConfig;
+  const base = `${API}/repos/${owner}/${repo}`;
+  const results = [];
+
+  if (githubLabel) {
+    const labelEncoded = encodeURIComponent(githubLabel);
+    const [open, closed] = await Promise.all([
+      cachedFetch(`${base}/issues?labels=${labelEncoded}&state=open&sort=updated&direction=desc&per_page=30`),
+      cachedFetch(`${base}/issues?labels=${labelEncoded}&state=closed&sort=updated&direction=desc&per_page=30`),
+    ]);
+    results.push(...open.data, ...closed.data);
+    return { items: results, remaining: open.remaining, limit: open.limit, fromCache: open.fromCache && closed.fromCache };
+  } else {
+    const [prs, issues] = await Promise.all([
+      cachedFetch(`${base}/pulls?state=all&sort=updated&direction=desc&per_page=30`),
+      cachedFetch(`${base}/issues?state=all&sort=updated&direction=desc&per_page=30`),
+    ]);
+    // Issues endpoint includes PRs; filter them out to avoid duplicates
+    const pureIssues = issues.data.filter(i => !i.pull_request);
+    // Map PRs to include pull_request field shape expected by classifyEvent
+    const mappedPRs = prs.data.map(pr => ({
+      ...pr,
+      pull_request: { merged_at: pr.merged_at },
+    }));
+    results.push(...mappedPRs, ...pureIssues);
+    return { items: results, remaining: prs.remaining, limit: prs.limit, fromCache: prs.fromCache && issues.fromCache };
+  }
+}
+
+function formatDate(date) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((today - target) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+}
+
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+let allEvents = [];
+let activeRepos = new Set();
+
+function getFilteredEvents() {
+  const daysBack = parseInt(document.getElementById('daysBack').value) || 30;
+  const filterType = document.getElementById('filterType').value;
+  const cutoff = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+
+  return allEvents.filter(ev => {
+    if (ev.date < cutoff) return false;
+    if (!activeRepos.has(ev.repo)) return false;
+
+    switch (filterType) {
+      case 'prs': return ev.type.startsWith('pr-');
+      case 'issues': return ev.type.startsWith('issue-');
+      case 'merged': return ev.type === 'pr-merged';
+      default: return true;
+    }
+  });
+}
+
+function renderTimeline() {
+  const app = document.getElementById('app');
+  const events = getFilteredEvents();
+
+  if (events.length === 0) {
+    app.innerHTML = '<div class="empty-state">No activity found for the selected filters.</div>';
+    return;
+  }
+
+  // Group by date
+  events.sort((a, b) => b.date - a.date);
+  const groups = {};
+  events.forEach(ev => {
+    const key = dateKey(ev.date);
+    if (!groups[key]) groups[key] = { date: ev.date, events: [] };
+    groups[key].events.push(ev);
+  });
+
+  const timeline = document.createElement('div');
+  timeline.className = 'timeline';
+
+  Object.keys(groups).sort().reverse().forEach(key => {
+    const group = groups[key];
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day-group';
+
+    const heading = document.createElement('div');
+    heading.className = 'day-heading';
+    heading.textContent = formatDate(group.date);
+    dayDiv.appendChild(heading);
+
+    group.events.forEach(ev => {
+      const item = document.createElement('div');
+      item.className = `timeline-item ${ev.type}`;
+
+      const time = ev.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const avatarHtml = ev.user && ev.user.avatar_url
+        ? `<img class="user-avatar" src="${ev.user.avatar_url}&s=36" alt="${escHtml(ev.user.login)}">`
+        : '';
+
+      item.innerHTML = `
+        <div class="item-icon ${ev.type}">${ev.icon}</div>
+        <div class="item-body">
+          <div class="item-title"><a href="${ev.url}" target="_blank">#${ev.number} ${escHtml(ev.title)}</a></div>
+          <div class="item-meta">
+            <span class="type-badge ${ev.type}">${ev.typeLabel}</span>
+            <span class="repo-badge">${escHtml(ev.repo)}</span>
+            <span>${avatarHtml} ${ev.user ? escHtml(ev.user.login) : ''}</span>
+            <span>${time}</span>
+          </div>
+        </div>
+      `;
+      dayDiv.appendChild(item);
+    });
+
+    timeline.appendChild(dayDiv);
+  });
+
+  app.innerHTML = '';
+  app.appendChild(timeline);
+}
+
+function renderRepoChips(repos) {
+  const container = document.getElementById('repoChips');
+  container.innerHTML = '';
+  repos.forEach(slug => {
+    const chip = document.createElement('span');
+    chip.className = `chip ${activeRepos.has(slug) ? 'active' : ''}`;
+    chip.textContent = slug.split('/')[1];
+    chip.title = slug;
+    chip.addEventListener('click', () => {
+      if (activeRepos.has(slug)) activeRepos.delete(slug);
+      else activeRepos.add(slug);
+      chip.classList.toggle('active');
+      renderTimeline();
+    });
+    container.appendChild(chip);
+  });
+}
+
+async function loadTimeline(forceRefresh = false) {
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading timeline...</div>';
+
+  try {
+    const config = await loadReposConfig();
+
+    if (forceRefresh) {
+      Object.keys(localStorage).filter(k => k.startsWith('gh_cache_'))
+        .forEach(k => localStorage.removeItem(k));
+    }
+
+    const results = await Promise.allSettled(config.repos.map(r => fetchTimelineData(r)));
+    const errors = [];
+    allEvents = [];
+    const repoSlugs = [];
+
+    results.forEach((result, i) => {
+      const rc = config.repos[i];
+      const slug = `${rc.owner}/${rc.repo}`;
+      repoSlugs.push(slug);
+      activeRepos.add(slug);
+
+      if (result.status === 'fulfilled') {
+        result.value.items.forEach(item => {
+          allEvents.push(...classifyEvent(item, rc));
+        });
+      } else {
+        errors.push(`${slug}: ${result.reason.message}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      const banner = document.createElement('div');
+      banner.className = 'error-banner';
+      banner.textContent = `Failed to fetch: ${errors.join('; ')}`;
+      app.innerHTML = '';
+      app.appendChild(banner);
+    }
+
+    // Deduplicate events (same repo + number + type)
+    const seen = new Set();
+    allEvents = allEvents.filter(ev => {
+      const key = `${ev.repo}#${ev.number}:${ev.type}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    renderRepoChips(repoSlugs);
+    renderTimeline();
+
+    // Update meta
+    const meta = document.getElementById('metaInfo');
+    const remaining = results.find(r => r.status === 'fulfilled' && r.value.remaining !== undefined);
+    let rateInfo = '';
+    if (remaining) {
+      const rv = remaining.value;
+      const pct = Math.round((rv.remaining / rv.limit) * 100);
+      const warn = pct < 20 ? ' rate-warn' : '';
+      rateInfo = ` · <span class="${warn}">API: ${rv.remaining}/${rv.limit} remaining</span>`;
+    }
+    const allFromCache = results.every(r => r.status === 'fulfilled' && r.value.fromCache);
+    const cacheNote = allFromCache ? '(cached)' : '(live)';
+    meta.innerHTML = `${allEvents.length} events ${cacheNote}${rateInfo}`;
+  } catch (err) {
+    app.innerHTML = `<div class="error-banner">Failed to load: ${escHtml(err.message)}</div>`;
+  }
+}
+
+document.getElementById('daysBack').addEventListener('change', renderTimeline);
+document.getElementById('filterType').addEventListener('change', renderTimeline);
+document.getElementById('refreshBtn').addEventListener('click', () => loadTimeline(true));
+
+loadTimeline();
+</script>
+</body>
+</html>
