@@ -1,0 +1,59 @@
+{
+  "repos": [
+    {
+      "owner": "akirk",
+      "repo": "friends",
+      "labels": {
+        "maturity": "stable",
+        "audience": "individual",
+        "problemSpace": "social"
+      }
+    },
+    {
+      "owner": "akirk",
+      "repo": "ai-assistant",
+      "labels": {
+        "maturity": "experimental",
+        "audience": "individual",
+        "problemSpace": "ai"
+      }
+    },
+    {
+      "owner": "akirk",
+      "repo": "personal-crm",
+      "labels": {
+        "maturity": "experimental",
+        "audience": "individual",
+        "problemSpace": "social"
+      }
+    },
+    {
+      "owner": "akirk",
+      "repo": "chat-to-blog",
+      "labels": {
+        "maturity": "experimental",
+        "audience": "individual",
+        "problemSpace": "social"
+      }
+    },
+    {
+      "owner": "akirk",
+      "repo": "static-archive",
+      "labels": {
+        "maturity": "experimental",
+        "audience": "individual",
+        "problemSpace": "archival"
+      }
+    },
+    {
+      "owner": "WordPress",
+      "repo": "wordpress-playground",
+      "githubLabel": "[Feature] Personal Playground",
+      "labels": {
+        "maturity": "active",
+        "audience": "community",
+        "problemSpace": "playground"
+      }
+    }
+  ]
+}

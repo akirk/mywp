@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>my.wordpress.net Dashboard</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --card-bg: #fff;
+    --text: #1a1a2e;
+    --text-muted: #6c757d;
+    --border: #e2e8f0;
+    --fresh: #10b981;
+    --warm: #f59e0b;
+    --stale: #ef4444;
+    --dormant: #94a3b8;
+    --pr-open: #f97316;
+    --pr-merged: #8b5cf6;
+    --accent: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .controls label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .controls select {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: right;
+    width: 100%;
+  }
+
+  .meta .rate-warn { color: var(--warm); font-weight: 500; }
+
+  .group-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--border);
+    text-transform: capitalize;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    border-left: 4px solid var(--dormant);
+    transition: box-shadow 0.2s;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+  .card.fresh   { border-left-color: var(--fresh); }
+  .card.warm    { border-left-color: var(--warm); }
+  .card.stale   { border-left-color: var(--stale); }
+  .card.dormant { border-left-color: var(--dormant); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .card-title a:hover { color: var(--accent); }
+
+  .card-owner {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .staleness-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .staleness-badge.fresh   { background: #d1fae5; color: #065f46; }
+  .staleness-badge.warm    { background: #fef3c7; color: #92400e; }
+  .staleness-badge.stale   { background: #fee2e2; color: #991b1b; }
+  .staleness-badge.dormant { background: #f1f5f9; color: #475569; }
+
+  .label-tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+
+  .label-tag {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #475569;
+    font-weight: 500;
+  }
+
+  .github-label-tag {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-weight: 500;
+  }
+
+  .section {
+    margin-top: 0.6rem;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .pr-list {
+    list-style: none;
+    font-size: 0.82rem;
+  }
+
+  .pr-list li {
+    padding: 0.2rem 0;
+    display: flex;
+    gap: 0.4rem;
+    align-items: flex-start;
+  }
+
+  .pr-list li a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .pr-list li a:hover { text-decoration: underline; }
+
+  .pr-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.45rem;
+  }
+
+  .pr-dot.open { background: var(--pr-open); }
+  .pr-dot.merged { background: var(--pr-merged); }
+
+  .open-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--pr-open);
+  }
+
+  .no-prs {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-muted);
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 0.5rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .refresh-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .refresh-btn:hover { background: var(--bg); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>my.wordpress.net</h1>
+  <div class="controls">
+    <label for="groupBy">Group by:</label>
+    <select id="groupBy">
+      <option value="">None (sort by activity)</option>
+      <option value="maturity">Maturity</option>
+      <option value="audience">Audience</option>
+      <option value="problemSpace">Problem Space</option>
+    </select>
+    <button class="refresh-btn" id="refreshBtn" title="Clear cache and refetch">↻ Refresh</button>
+  </div>
+  <div class="meta" id="metaInfo"></div>
+</header>
+
+<div id="app">
+  <div class="loading"><div class="spinner"></div><br>Loading repos…</div>
+</div>
+
+<script>
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const API = 'https://api.github.com';
+
+function cacheKey(url) {
+  return 'gh_cache_' + url;
+}
+
+async function cachedFetch(url) {
+  const key = cacheKey(url);
+  const cached = localStorage.getItem(key);
+  if (cached) {
+    const { data, ts } = JSON.parse(cached);
+    if (Date.now() - ts < CACHE_TTL) {
+      return { data, fromCache: true };
+    }
+  }
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    const remaining = resp.headers.get('X-RateLimit-Remaining');
+    if (resp.status === 403 && remaining === '0') {
+      const reset = resp.headers.get('X-RateLimit-Reset');
+      const resetDate = new Date(reset * 1000);
+      throw new Error(`Rate limited. Resets at ${resetDate.toLocaleTimeString()}`);
+    }
+    throw new Error(`HTTP ${resp.status} for ${url}`);
+  }
+  const data = await resp.json();
+  const remaining = resp.headers.get('X-RateLimit-Remaining');
+  const limit = resp.headers.get('X-RateLimit-Limit');
+  localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  return { data, fromCache: false, remaining, limit };
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return Infinity;
+  const d = new Date(dateStr);
+  return Math.floor((Date.now() - d) / (1000 * 60 * 60 * 24));
+}
+
+function stalenessClass(days) {
+  if (days <= 7) return 'fresh';
+  if (days <= 30) return 'warm';
+  if (days <= 90) return 'stale';
+  return 'dormant';
+}
+
+function stalenessText(days) {
+  if (days === Infinity) return 'No merges';
+  if (days === 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  return `${days} days ago`;
+}
+
+async function fetchRepoData(repoConfig) {
+  const { owner, repo, githubLabel } = repoConfig;
+  const base = `${API}/repos/${owner}/${repo}`;
+
+  const fetches = [];
+
+  if (githubLabel) {
+    // Use the issues endpoint with label filter — it returns both issues and PRs
+    const labelEncoded = encodeURIComponent(githubLabel);
+    fetches.push(
+      cachedFetch(`${base}/issues?labels=${labelEncoded}&state=open&sort=updated&direction=desc&per_page=30`),
+      cachedFetch(`${base}/issues?labels=${labelEncoded}&state=closed&sort=updated&direction=desc&per_page=30`)
+    );
+  } else {
+    fetches.push(
+      cachedFetch(`${base}/pulls?state=all&sort=updated&direction=desc&per_page=30`)
+    );
+  }
+
+  const results = await Promise.all(fetches);
+
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+  let openPRs, recentlyMerged, lastMergeDate, labeledIssues;
+
+  if (githubLabel) {
+    const openItems = results[0].data;
+    const closedItems = results[1].data;
+
+    // Separate PRs from issues (PRs have a pull_request key)
+    openPRs = openItems.filter(item => item.pull_request);
+    labeledIssues = openItems.filter(item => !item.pull_request);
+
+    // For closed items, find merged PRs (closed PRs with a merge reference)
+    const closedPRs = closedItems.filter(item => item.pull_request);
+    // The issues endpoint doesn't include merged_at, so use closed_at as proxy
+    recentlyMerged = closedPRs.filter(item => new Date(item.closed_at) > thirtyDaysAgo);
+    lastMergeDate = closedPRs.length > 0 ? closedPRs[0].closed_at : null;
+  } else {
+    const prs = results[0].data;
+    const mergedPRs = prs.filter(pr => pr.merged_at);
+    lastMergeDate = mergedPRs.length > 0 ? mergedPRs[0].merged_at : null;
+    openPRs = prs.filter(pr => pr.state === 'open');
+    recentlyMerged = mergedPRs.filter(pr => new Date(pr.merged_at) > thirtyDaysAgo);
+    labeledIssues = [];
+  }
+
+  return {
+    ...repoConfig,
+    lastMergeDate,
+    daysSinceLastMerge: daysSince(lastMergeDate),
+    openPRs,
+    recentlyMerged,
+    labeledIssues,
+    remaining: results[0].remaining,
+    limit: results[0].limit,
+    fromCache: results.every(r => r.fromCache),
+  };
+}
+
+function renderCard(data) {
+  const sc = stalenessClass(data.daysSinceLastMerge);
+  const card = document.createElement('div');
+  card.className = `card ${sc}`;
+
+  const labelTags = Object.entries(data.labels || {})
+    .map(([k, v]) => `<span class="label-tag">${v}</span>`)
+    .join('');
+
+  const ghLabel = data.githubLabel
+    ? `<span class="github-label-tag">⚑ ${data.githubLabel}</span>`
+    : '';
+
+  let openPRsHTML = '';
+  if (data.openPRs.length > 0) {
+    const items = data.openPRs.map(pr =>
+      `<li><span class="pr-dot open"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
+    ).join('');
+    openPRsHTML = `
+      <div class="section">
+        <div class="section-title">Open PRs <span class="open-count">(${data.openPRs.length})</span></div>
+        <ul class="pr-list">${items}</ul>
+      </div>`;
+  }
+
+  let mergedHTML = '';
+  if (data.recentlyMerged.length > 0) {
+    const items = data.recentlyMerged.slice(0, 5).map(pr =>
+      `<li><span class="pr-dot merged"></span><a href="${pr.html_url}" target="_blank">#${pr.number} ${escHtml(pr.title)}</a></li>`
+    ).join('');
+    const more = data.recentlyMerged.length > 5 ? `<li style="color:var(--text-muted);font-size:0.75rem;padding-left:1rem">+ ${data.recentlyMerged.length - 5} more</li>` : '';
+    mergedHTML = `
+      <div class="section">
+        <div class="section-title">Recently Merged (30d)</div>
+        <ul class="pr-list">${items}${more}</ul>
+      </div>`;
+  }
+
+  let labeledHTML = '';
+  if (data.labeledIssues && data.labeledIssues.length > 0) {
+    const items = data.labeledIssues.map(issue =>
+      `<li><span class="pr-dot open"></span><a href="${issue.html_url}" target="_blank">#${issue.number} ${escHtml(issue.title)}</a></li>`
+    ).join('');
+    labeledHTML = `
+      <div class="section">
+        <div class="section-title">Labeled Issues: ${escHtml(data.githubLabel)} <span class="open-count">(${data.labeledIssues.length})</span></div>
+        <ul class="pr-list">${items}</ul>
+      </div>`;
+  }
+
+  const noPRs = data.openPRs.length === 0 && data.recentlyMerged.length === 0 && (!data.labeledIssues || data.labeledIssues.length === 0)
+    ? '<div class="no-prs">No PR activity</div>' : '';
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div>
+        <div class="card-title">
+          <a href="https://github.com/${data.owner}/${data.repo}" target="_blank">${data.repo}</a>
+        </div>
+        <div class="card-owner">${data.owner}</div>
+      </div>
+      <span class="staleness-badge ${sc}">${stalenessText(data.daysSinceLastMerge)}</span>
+    </div>
+    <div class="label-tags">${labelTags}${ghLabel}</div>
+    ${openPRsHTML}
+    ${mergedHTML}
+    ${labeledHTML}
+    ${noPRs}
+  `;
+  return card;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderDashboard(repos, groupBy) {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  if (!groupBy) {
+    // Sort by last activity (most recent first)
+    repos.sort((a, b) => a.daysSinceLastMerge - b.daysSinceLastMerge);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    repos.forEach(r => grid.appendChild(renderCard(r)));
+    app.appendChild(grid);
+  } else {
+    // Group by the chosen label dimension
+    const groups = {};
+    repos.forEach(r => {
+      const key = (r.labels && r.labels[groupBy]) || 'uncategorized';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    });
+    const sortedKeys = Object.keys(groups).sort();
+    sortedKeys.forEach(key => {
+      const heading = document.createElement('h2');
+      heading.className = 'group-heading';
+      heading.textContent = key;
+      app.appendChild(heading);
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      groups[key]
+        .sort((a, b) => a.daysSinceLastMerge - b.daysSinceLastMerge)
+        .forEach(r => grid.appendChild(renderCard(r)));
+      app.appendChild(grid);
+    });
+  }
+}
+
+function updateMeta(repos) {
+  const meta = document.getElementById('metaInfo');
+  const anyFromCache = repos.some(r => r.fromCache);
+  const allFromCache = repos.every(r => r.fromCache);
+
+  // Find the oldest cache timestamp
+  let lastFetched = null;
+  for (const r of repos) {
+    const key = cacheKey(`${API}/repos/${r.owner}/${r.repo}/pulls?state=all&sort=updated&direction=desc&per_page=30`);
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const { ts } = JSON.parse(cached);
+      if (!lastFetched || ts < lastFetched) lastFetched = ts;
+    }
+  }
+
+  const remaining = repos.find(r => r.remaining !== undefined);
+  let rateInfo = '';
+  if (remaining && remaining.remaining !== undefined) {
+    const pct = Math.round((remaining.remaining / remaining.limit) * 100);
+    const warn = pct < 20 ? ' rate-warn' : '';
+    rateInfo = ` · <span class="${warn}">API: ${remaining.remaining}/${remaining.limit} remaining</span>`;
+  }
+
+  const fetchedStr = lastFetched ? new Date(lastFetched).toLocaleTimeString() : 'just now';
+  const cacheNote = allFromCache ? '(cached)' : anyFromCache ? '(partially cached)' : '(live)';
+  meta.innerHTML = `Last fetched: ${fetchedStr} ${cacheNote}${rateInfo}`;
+}
+
+let repoData = [];
+
+async function loadDashboard(forceRefresh = false) {
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading repos…</div>';
+
+  try {
+    const configResp = await fetch('repos.json');
+    const config = await configResp.json();
+
+    if (forceRefresh) {
+      // Clear all cached github data
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('gh_cache_'));
+      keys.forEach(k => localStorage.removeItem(k));
+    }
+
+    const results = await Promise.allSettled(
+      config.repos.map(r => fetchRepoData(r))
+    );
+
+    const errors = [];
+    repoData = [];
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        repoData.push(result.value);
+      } else {
+        errors.push(`${config.repos[i].owner}/${config.repos[i].repo}: ${result.reason.message}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      const banner = document.createElement('div');
+      banner.className = 'error-banner';
+      banner.textContent = `Failed to fetch: ${errors.join('; ')}`;
+      app.innerHTML = '';
+      app.appendChild(banner);
+    }
+
+    renderDashboard(repoData, document.getElementById('groupBy').value);
+    updateMeta(repoData);
+  } catch (err) {
+    app.innerHTML = `<div class="error-banner">Failed to load: ${escHtml(err.message)}</div>`;
+  }
+}
+
+document.getElementById('groupBy').addEventListener('change', () => {
+  if (repoData.length > 0) {
+    renderDashboard(repoData, document.getElementById('groupBy').value);
+  }
+});
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  loadDashboard(true);
+});
+
+loadDashboard();
+</script>
+</body>
+</html>
