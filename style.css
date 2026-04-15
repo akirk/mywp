@@ -536,11 +536,7 @@ h1 a:hover { color: var(--accent); }
   border: 2px solid var(--bg);
 }
 
-.timeline-item.pr-opened::before { background: var(--pr-open); }
-.timeline-item.pr-merged::before { background: var(--pr-merged); }
-.timeline-item.pr-closed::before { background: var(--pr-closed); }
-.timeline-item.issue-opened::before { background: var(--issue-open); }
-.timeline-item.issue-closed::before { background: var(--pr-closed); }
+.timeline-item::before { background: var(--repo-color, var(--accent)); }
 
 .item-icon {
   flex-shrink: 0;
@@ -555,11 +551,6 @@ h1 a:hover { color: var(--accent); }
   color: #fff;
 }
 
-.item-icon.pr-opened { background: var(--pr-open); }
-.item-icon.pr-merged { background: var(--pr-merged); }
-.item-icon.pr-closed { background: var(--pr-closed); }
-.item-icon.issue-opened { background: var(--issue-open); }
-.item-icon.issue-closed { background: var(--pr-closed); }
 
 .item-body { flex: 1; min-width: 0; }
 

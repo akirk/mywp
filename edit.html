@@ -36,6 +36,8 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="utils.js"></script>
+<script src="github.js"></script>
 <script>
 const GITHUB_EDIT_URL = 'https://github.com/akirk/mywp/edit/main/repos.json';
 
@@ -107,16 +109,6 @@ function renderRepoCard(repo, index) {
     </div>
   `;
   return card;
-}
-
-function escHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function escAttr(s) {
-  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
 function renderAll() {
@@ -225,21 +217,12 @@ document.getElementById('copyJsonBtn').addEventListener('click', () => {
 
 document.getElementById('editGithubLink').href = GITHUB_EDIT_URL;
 
-// Load initial data
 async function init() {
-  // Prefer override if it exists, otherwise fetch repos.json
-  const override = localStorage.getItem('repos_override');
-  if (override) {
-    const config = JSON.parse(override);
+  try {
+    const config = await loadReposConfig();
     repos = config.repos || [];
-  } else {
-    try {
-      const resp = await fetch('repos.json');
-      const config = await resp.json();
-      repos = config.repos || [];
-    } catch (err) {
-      repos = [];
-    }
+  } catch (err) {
+    repos = [];
   }
   renderAll();
   updateOverrideBanner();

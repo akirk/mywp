@@ -46,6 +46,15 @@
       }
     },
     {
+      "owner": "akirk",
+      "repo": "my-apps",
+      "labels": {
+        "maturity": "experimental",
+        "audience": "individual",
+        "problemSpace": "apps"
+      }
+    },
+    {
       "owner": "WordPress",
       "repo": "wordpress-playground",
       "githubLabel": "[Feature] Personal Playground",
